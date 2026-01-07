@@ -1,5 +1,6 @@
 langchain 
-wikipedia 
+wikipedia
+langchain-core 
 langchain-community 
 langchain-openai
 langchain-anthropic
