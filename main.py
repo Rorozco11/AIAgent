@@ -4,7 +4,8 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
-from langchain.agents import create_tool_calling_agent , AgentExecutor
+from langchain.agents import AgentExecutor
+from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from tools import search_tool
 from pprint import pprint
 import json
@@ -43,9 +44,9 @@ def get_agent_executor():
     tools = [search_tool]
     
     agent = create_tool_calling_agent(
-        llm=llmOpen,
-        prompt=prompt,
-        tools=tools
+        llmOpen,
+        tools,
+        prompt
     )
     
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
