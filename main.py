@@ -4,12 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
-try:
-    from langchain.agents import AgentExecutor
-except Exception:
-    # Some langchain versions expose AgentExecutor from a submodule
-    from langchain.agents.agent import AgentExecutor
-from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
+# from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from tools import search_tool
 from pprint import pprint
 import json
@@ -52,9 +47,51 @@ def get_agent_executor():
         tools,
         prompt
     )
-    
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-    return agent_executor, parser
+    # Try to construct a full AgentExecutor when available (different
+    # langchain versions expose it in different places). If it's not
+    # available in the runtime, fall back to wrapping the Runnable
+    # returned by `create_tool_calling_agent` so callers can still use
+    # `.invoke({...})` and receive a dict with an `output` key.
+    try:
+        from langchain.agents import AgentExecutor
+
+        agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+        return agent_executor, parser
+    except Exception:
+        class RunnableAgentExecutorWrapper:
+            def __init__(self, runnable, tools=None):
+                self.runnable = runnable
+                self.tools = tools
+
+            def invoke(self, inputs: dict):
+                try:
+                    final_output = self.runnable.invoke(inputs, config={})
+                except TypeError:
+                    final_output = self.runnable.invoke(inputs)
+
+                # Normalize several possible return shapes into {'output': str}
+                if isinstance(final_output, dict):
+                    if "output" in final_output:
+                        return {"output": final_output["output"]}
+                    if "return_values" in final_output:
+                        rv = final_output["return_values"]
+                        if isinstance(rv, dict) and "output" in rv:
+                            return {"output": rv["output"]}
+                        return {"output": str(rv)}
+                    return {"output": str(final_output)}
+
+                if hasattr(final_output, "return_values"):
+                    rv = getattr(final_output, "return_values")
+                    if isinstance(rv, dict) and "output" in rv:
+                        return {"output": rv["output"]}
+
+                if hasattr(final_output, "content"):
+                    return {"output": getattr(final_output, "content")}
+
+                return {"output": str(final_output)}
+
+        agent_executor = RunnableAgentExecutorWrapper(agent, tools=tools)
+        return agent_executor, parser
 
 def execute_research_query(query: str):
     """Execute a research query and return the parsed response."""
