@@ -4,7 +4,11 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
-from langchain.agents import AgentExecutor
+try:
+    from langchain.agents import AgentExecutor
+except Exception:
+    # Some langchain versions expose AgentExecutor from a submodule
+    from langchain.agents.agent import AgentExecutor
 from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from tools import search_tool
 from pprint import pprint
@@ -55,8 +59,11 @@ def get_agent_executor():
 def execute_research_query(query: str):
     """Execute a research query and return the parsed response."""
     agent_executor, parser = get_agent_executor()
-    raw_response = agent_executor.invoke({"query": query})
-    
+    try:
+        raw_response = agent_executor.invoke({"query": query})
+    except Exception as e:
+        return None, {"error": f"Invocation error: {e}", "raw_response": None}
+
     try:
         structured_response = parser.parse(raw_response["output"])
         return structured_response, None
