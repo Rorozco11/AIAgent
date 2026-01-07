@@ -4,7 +4,10 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
-# from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
+try:
+    from langchain.agents import create_tool_calling_agent
+except Exception:
+    from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from tools import search_tool
 from pprint import pprint
 import json

@@ -1,5 +1,5 @@
 import streamlit as st
-# from main import execute_research_query, ResearchResponse
+from main import execute_research_query, ResearchResponse
 
 # Page configuration
 st.set_page_config(
