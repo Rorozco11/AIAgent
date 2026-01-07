@@ -1,12 +1,10 @@
 from langchain_community.tools import WikipediaQueryRun, DuckDuckGoSearchRun
 from langchain_community.utilities import WikipediaAPIWrapper
-from langchain_core.tools import StructuredTool
 from datetime import datetime
 
 
-search = DuckDuckGoSearchRun()
-search_tool = StructuredTool.from_function(
-    func=search.run,
-    name="search",
-    description="Search the web for information"
-)
+# DuckDuckGoSearchRun is already a BaseTool, so we can use it directly
+search_tool = DuckDuckGoSearchRun()
+# Optionally customize the name and description
+search_tool.name = "search"
+search_tool.description = "Search the web for information"
