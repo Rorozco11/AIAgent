@@ -2,6 +2,7 @@ wikipedia
 python-dotenv
 pydantic
 ddgs
+duckduckgo-search
 
 streamlit>=1.40.0
 
