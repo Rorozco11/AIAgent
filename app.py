@@ -83,3 +83,14 @@ if not st.session_state.history and not query:
     - "Research the history of artificial intelligence"
     """)
 
+# Footer with creator credit
+st.markdown("---")
+st.markdown(
+    """
+    <div style='text-align: center; color: #666; padding: 20px;'>
+        <p>Created by <strong>Ryan Orozco</strong></p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
